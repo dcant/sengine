@@ -1,0 +1,10 @@
+Generate forward index file:
+bin/GenFwd packpath indexpath dictpath
+e.g. bin/GenFwd corpus/ index/ worddict/
+
+Generate invert index file:
+bin/GenInv indexpath
+e.g. bin/GenInv index/
+
+Main search program:
+bin/Searcher

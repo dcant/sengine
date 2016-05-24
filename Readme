@@ -1,0 +1,101 @@
+项目的输入:
+Spider抓取的760网页库(具体可以参考目录结构中corpus目录)，已用工具分析为URL和Title。
+
+项目的输出: 
+一个简单的搜索引擎，根据query，给出和query最相关的前十结果，包括URL和Title，请参考文章：《The Anatomy of a Search Engine》
+要求：
+a 按照相关性排序
+b 只考虑title本身
+c 结果响应时间不超过1秒
+
+目录结构：
+1. bin : 
+bin文件夹中放置的是二进制可执行文件，现包含reduce_pack和test-seg两个实例程序，未来你编制的程序也需要放置到这个文件夹中。
+
+2. corpus :
+corpus文件夹中存放这四个库文件用来被构建搜索引擎，
+包括 测试用文件（test.pack，reduce.pack）；全库文件（full.pack，full_reduce.pack）
+需要关注的是reduce.pack和full_reduce.pack，这两个库仅包含url和title部分。
+reduce_pack 可以被用来转化 test.pack -> reduce.pack ; full.pack -> full_reduce.pack
+
+3. doc :
+doc存放这项目的参考文章： “The-Anatomy-of-a-Search-Engine”，请把你的设计文档也放在这个目录下
+
+4. include，process，test:
+这三个目录用来存放代码，include文件夹存放头文件，process文件夹存放与项目相关的CPP文件，而test文件夹存放你所写的用以验证你想法的程序文件。
+
+5. lib2-64
+这个目录存放着一些常用的库文件，比如ullib
+
+6. wordict
+用来分词的字典目录
+
+7. index
+索引文件目录，你在程序过程中所生成的正排倒排索引文件都放在这个目录中
+
+
+开始程序：
+可以用来参考的有三个程序，
+1. ./test/test_seg.cpp 
+可以通过./seg_test.sh来运行
+该程序介绍了如何使用分词程序，我们观察分词不同的层次：
+void PrintScw(Scw* scw)
+{
+  char word[256];
+
+  for (int bufid = 0; bufid < Scw::BUFFER_NUM; bufid++)
+  {
+      fprintf(gLog, "%15s: ", Scw::kBufferName[bufid]);
+      for (int termid=0; termid < scw->GetTermCount(bufid); termid++)
+      {
+          scw->ReadTerm(bufid, termid, word, sizeof(word));
+          fprintf(gLog, "%s/", word);
+      }
+      fprintf(gLog, "\n");
+  }
+}
+其中包括基本词，词，词组，人名，书名这五个层次，需要建库的层次是基本词，也就是切分粒度最小的结果。
+以下的程序可以用来遍历基本词！
+char word[256];
+for (int termid=0; termid < scw->GetTermCount(0); termid++)
+{
+	scw->ReadTerm(0, termid, word, sizeof(word));
+}
+
+2. ./process/reduce_pack.cpp
+可以通过process.sh来运行，不过现在这一步是被注释的。
+未来包括“建正排索引”，“建倒排索引”，“启动搜索引擎”这三步的执行命令都请加入到process.sh的脚本中去。
+这个程序可以说明如何读取pack文件：其实关心的只有URL：title这一对而已。
+
+3. ./process/search.cpp
+这个是搜索引擎的主程序，文件中给出了结果的输出样程。
+./example.results给出的是搜索结果的例子。
+
+
+你所编写的程序：
+包含三个部分：
+1. 建立正排表
+2. 建立倒排表
+3. 搜索主程序
+
+整个程序可以按照两个阶段来做：
+第一周， 完成建正排表，建倒排表，和搜索主程序的部分：
+1 搜索结果按照 优先返回命中最多term的状况。
+2 在命中相同数目term的情况下，以url在pack出现的先后顺序排序。
+
+审核标准：
+对于任何的query，响应时间不得超过2秒
+有一个10query的标准结果，需要完全一致
+
+
+第二周， 思考如何优化ranking系统：
+1. 可以考虑，tf， idf
+2. offset
+3. 模拟term重要性
+4. 请注意留有Debug信息的输出
+
+审核标准：
+进一步提升query的响应时间，可以合理得进行结果剪枝，使响应时间不超过1秒。
+在系统中加入debug信息，即可以看到排序结果的由来。
+描述每个排序设计的思路，可以参考并且不拘泥于上文提到的feaure。
+

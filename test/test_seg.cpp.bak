@@ -1,0 +1,72 @@
+/***************************************************************************
+ * 
+ * Copyright (c) 2010 Baidu.com, Inc. All Rights Reserved
+ * 
+ **************************************************************************/
+ 
+ 
+ 
+/**
+ * @file test_seg.cpp
+ * @author qiangsheng(com@baidu.com)
+ * @date 2010/11/12 11:15:49
+ * @brief 
+ *  
+ **/
+
+#include "scw.h"
+
+int main(int argc,char** argv)
+{
+  char  line[1024000];
+  int   len = 0;
+
+  Scw   scw;
+  u_int scw_out_flag;
+
+  if (argc < 2)
+  {
+      fprintf(stderr, "usage: %s  dictpath \n", argv[0]);
+      exit(-1);
+  }
+
+  // ÔØÈëÇÐ´Ê´Êµä
+  if (!scw.LoadDict(argv[1]))
+  {
+      fprintf(stderr,"Load worddict failed.Filename=%s\n", argv[1]);
+      return -1;
+  }
+
+  // Éú³ÉÇÐ´Êbuffer
+  scw_out_flag = SCW_OUT_ALL | SCW_OUT_PROP;
+  if (!scw.InitBuffer(512000, scw_out_flag))
+  {
+      fprintf(stderr,"Init the output buffer error.\n");
+      return -1;
+  }
+
+  scw.PrintVersion();
+
+  FILE* out = stdout;
+
+  while (fgets(line, sizeof(line), stdin))
+  {
+      len = chmop(line);
+      if (len <= 0)
+      {
+          continue;
+      }
+
+      scw.SegmentWord(line, len);
+
+      PrintScw(&scw);
+  }
+
+  fclose(out);
+  fclose(gLog);
+
+  return 0;
+}
+
+
+/* vim: set expandtab ts=4 sw=4 sts=4 tw=100: */
